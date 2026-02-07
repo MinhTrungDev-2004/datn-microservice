@@ -1,24 +1,19 @@
-package com.datn.moneyai.models.global;
+package datn.category_service.models.global;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.UUID;
 
 @Getter
 @Setter
 public class ApiResult<T> {
-    private Boolean status = false;
-
-    // Thông báo cho user
+    private boolean status = false;
     private String userMessage;
-
-    // Mã định danh duy nhất cho mỗi yêu cầu, dùng để theo dõi và gỡ lỗi
     private String traceID = UUID.randomUUID().toString();
-
-    // Thông báo nội bộ
     private String internalMessage;
-
     private T data;
+
     public static <T> ApiResult<T> success(T data, String userMessage) {
         ApiResult<T> result = new ApiResult<>();
         result.setStatus(true);
