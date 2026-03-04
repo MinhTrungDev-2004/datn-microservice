@@ -3,11 +3,14 @@ package com.datn.moneyai.controllers;
 import com.datn.moneyai.models.dtos.auth.LoginRequest;
 import com.datn.moneyai.models.dtos.auth.TokenResponse;
 import com.datn.moneyai.models.dtos.users.UserCreateRequest;
-import com.datn.moneyai.models.dtos.users.UserGetsResponse;
 import com.datn.moneyai.models.global.ApiResult;
+import com.datn.moneyai.models.dtos.auth.LoginGetResponse;
 import com.datn.moneyai.services.interfaces.ITokenService;
-import com.datn.moneyai.services.interfaces.IUserService;
+import com.datn.moneyai.services.interfaces.IAuthService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,29 +19,29 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class AuthController extends ApiBaseController {
     private final AuthenticationManager authenticationManager;
     private final ITokenService tokenService;
-    private final IUserService userService;
+    private final IAuthService authService;
 
-    // Constructor
-    public AuthController(AuthenticationManager authenticationManager, ITokenService tokenService,
-            IUserService userService) {
-        this.authenticationManager = authenticationManager;
-        this.tokenService = tokenService;
-        this.userService = userService;
-    }
-
-    @PostMapping("/register")
+    /**
+     * 
+     * @param register Tạo mới người dùng.
+     * @return Tạo người dùng mới thành công.
+     */
+    @PostMapping("/public/auth/register")
     public ResponseEntity<ApiResult<Long>> register(@RequestBody UserCreateRequest request) {
-        return exeResponseEntity(() -> userService.createUser(request));
+        return exeResponseEntity(() -> authService.createUser(request));
     }
 
-    @PostMapping("/login")
+    /**
+     * 
+     * @param loginInput Thông tin đăng nhập của người dùng.
+     * @return Token xác thực nếu đăng nhập thành công.
+     */
+    @PostMapping("/public/auth/login")
     public ResponseEntity<ApiResult<TokenResponse>> login(@RequestBody LoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -47,16 +50,70 @@ public class AuthController extends ApiBaseController {
                             request.getPassword()));
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             TokenResponse tokens = tokenService.generateTokens(userDetails);
-            return ResponseEntity.ok(ApiResult.success(tokens, "Đăng nhập thành công"));
+
+            // Tạo HttpOnly Cookie cho Refresh Token
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(7 * 24 * 60 * 60)
+                    .sameSite("Strict")
+                    .build();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body(ApiResult.success(tokens, "Đăng nhập thành công"));
         } catch (BadCredentialsException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResult.fail("Email hoặc mật khẩu không chính xác"));
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResult<List<UserGetsResponse>>> getUser() {
-        ApiResult<List<UserGetsResponse>> result = userService.getUser();
+    /**
+     * 
+     * @return Thông tin người dùng hiện tại.
+     */
+    @GetMapping("/auth/get-info")
+    public ResponseEntity<ApiResult<LoginGetResponse>> getCurrentUser(Authentication authentication) {
+        ApiResult<LoginGetResponse> result = tokenService.getUserInfo(authentication);
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 
+     * @param token          Refresh token để đăng xuất.
+     * @param servletRequest Yêu cầu HTTP hiện tại.
+     * @return Phản hồi thành công khi đăng xuất.
+     */
+    @DeleteMapping("/public/auth/logout")
+    public ResponseEntity<ApiResult<Void>> logout(
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
+            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+
+        /**
+         * Lấy Access Token từ header
+         */
+        String accessToken = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            accessToken = authHeader.substring(7);
+        }
+
+        /**
+         * Gọi service để xử lý Blacklist cả 2 token
+         */
+        authService.logout(accessToken, refreshToken);
+
+        /**
+         * Xóa Cookie ở client bằng cách set maxAge = 0
+         */
+        ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
+                .body(ApiResult.success(null, "Đăng xuất thành công"));
     }
 }

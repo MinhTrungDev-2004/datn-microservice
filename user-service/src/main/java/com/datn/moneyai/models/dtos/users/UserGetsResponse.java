@@ -12,11 +12,18 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserGetsResponse {
+
     private Long id;
+
     private String email;
+
     private String role;
+
     private String avatarUrl;
+
     private String defaultCurrency;
+
     private LocalDateTime createTime;
+
     private LocalDateTime lastModifiedTime;
 }

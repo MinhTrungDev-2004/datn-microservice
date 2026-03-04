@@ -8,5 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public interface ITokenService {
     TokenResponse generateTokens(UserDetails userDetails);
+
     public ApiResult<LoginGetResponse> getUserInfo(Authentication authentication);
 }

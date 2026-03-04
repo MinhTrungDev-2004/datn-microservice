@@ -28,7 +28,7 @@ public class User extends BaseEntity {
 
     private String avatarUrl;
 
-    @Column(length = 3)
+    @Column(length = 5)
     private String defaultCurrency;
 
     @Column(name = "is_active")

@@ -22,9 +22,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
     private static final List<String> EXCLUDED_PATHS = List.of(
-            "/api/users/login",
-            "/api/users/register"
-    );
+            "/public/auth/register",
+            "/public/auth/login",
+            "/public/auth/token",
+            "/public/auth/logout");
 
     protected void doFilterInternal(
             HttpServletRequest request,

@@ -5,9 +5,11 @@ import com.datn.moneyai.models.dtos.users.UserGetsResponse;
 import com.datn.moneyai.models.global.ApiResult;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface IUserService {
+public interface IAuthService {
+    ApiResult<Long> createUser(UserCreateRequest request);
+
     ApiResult<List<UserGetsResponse>> getUser();
-    ApiResult<UUID> createUser(UserCreateRequest request);
+
+    void logout(String accessToken, String refreshToken);
 }

@@ -1,5 +1,9 @@
 package com.datn.moneyai;
 
+import com.datn.moneyai.models.entities.bases.Role;
+import com.datn.moneyai.models.entities.enums.RoleName;
+import com.datn.moneyai.repositories.RoleRepository;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -14,4 +18,16 @@ public class UserServiceApplication {
         SpringApplication.run(UserServiceApplication.class, args);
     }
 
+    @org.springframework.context.annotation.Bean
+    CommandLineRunner seedRoles(RoleRepository roleRepository) {
+        return args -> {
+            for (RoleName rn : RoleName.values()) {
+                if (roleRepository.findByName(rn).isEmpty()) {
+                    Role role = new Role();
+                    role.setName(rn);
+                    roleRepository.save(role);
+                }
+            }
+        };
+    }
 }

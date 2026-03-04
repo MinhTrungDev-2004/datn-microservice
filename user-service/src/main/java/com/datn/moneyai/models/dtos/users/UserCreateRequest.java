@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserCreateRequest {
+
     @NotBlank(message = "Vui lòng nhập email")
     private String email;
 

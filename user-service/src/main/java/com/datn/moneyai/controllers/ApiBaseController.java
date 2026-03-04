@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 
 @Controller
 public abstract class ApiBaseController {
-    protected <T>ResponseEntity<ApiResult<T>> exeResponseEntity(Supplier<ApiResult<T>> supplier) {
+    protected <T> ResponseEntity<ApiResult<T>> exeResponseEntity(Supplier<ApiResult<T>> supplier) {
         try {
             ApiResult<T> result = supplier.get();
             return ResponseEntity.ok(result);

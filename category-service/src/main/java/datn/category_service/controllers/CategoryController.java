@@ -20,7 +20,7 @@ public class CategoryController extends ApiBaseController {
 
     @PostMapping("/create")
     public ResponseEntity<ApiResult<String>> createCategory(@RequestBody CategoryCreateRequest request) {
-        return ResponseEntity.ok(
+        return ResponseEntity.ok (
                 ApiResult.success(categoryService.createCategory(request), "Tạo danh mục thành công"));
     }
 
