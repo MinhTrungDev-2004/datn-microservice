@@ -1,4 +1,5 @@
 package com.datn.moneyai.models.entities.bases;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,7 +24,7 @@ public class Transaction extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    private CategoryEntity category;
 
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;

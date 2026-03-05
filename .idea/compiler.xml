@@ -7,11 +7,13 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="user-service" />
-        <module name="category-service" />
         <module name="gateway-service" />
         <module name="discovery-service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="category-service" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

@@ -1,4 +1,5 @@
 package com.datn.moneyai.models.entities.bases;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +23,7 @@ public class Budget extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    private Category category;
+    private CategoryEntity category;
 
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal limitAmount;

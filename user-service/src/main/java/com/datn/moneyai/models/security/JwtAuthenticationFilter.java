@@ -24,7 +24,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final List<String> EXCLUDED_PATHS = List.of(
             "/public/auth/register",
             "/public/auth/login",
-            "/public/auth/token",
             "/public/auth/logout");
 
     protected void doFilterInternal(

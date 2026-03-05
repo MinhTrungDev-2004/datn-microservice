@@ -1,4 +1,5 @@
 package com.datn.moneyai.models.entities.bases;
+
 import com.datn.moneyai.models.entities.enums.CategoryType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Category extends BaseEntity {
+public class CategoryEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

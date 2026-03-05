@@ -17,15 +17,9 @@ spring:
                 - id: user-service-protected
                   uri: lb://USER-SERVICE
                   predicates:
-                      - Path=/auth/**
+                      - Path=/auth/**, /category/**
 
-                # 3. API của Category
-                - id: category-service
-                  uri: lb://CATEGORY-SERVICE
-                  predicates:
-                      - Path=/api/categories/**
-
-                # 4. Route lấy dữ liệu JSON Swagger của User Service (ĐỂ ĐỌC ĐƯỢC SWAGGER)
+                # 3. Route lấy dữ liệu JSON Swagger của User Service
                 - id: openapi-user-service
                   uri: lb://USER-SERVICE
                   predicates:
@@ -43,18 +37,11 @@ eureka:
         ip-address: 127.0.0.1
         prefer-ip-address: true
 
-# ===============================
-# CẤU HÌNH BẢO MẬT (JWT)
-# ===============================
 jwt:
     secret: ThisIsA_VeryLongSecretKey_ForJwtMoneyAi_ChangeMe123456
 
-# ===============================
-# CẤU HÌNH GIAO DIỆN SWAGGER GATEWAY
-# ===============================
 springdoc:
     swagger-ui:
-        # Định nghĩa danh sách Dropdown để chọn Service xem tài liệu
         urls:
             - name: User Service API
               url: /v3/api-docs/user-service
