@@ -26,10 +26,9 @@ public class AuthController extends ApiBaseController {
     private final ITokenService tokenService;
     private final IAuthService authService;
 
+
     /**
-     * 
-     * @param register Tạo mới người dùng.
-     * @return Tạo người dùng mới thành công.
+     * API tạo mới người dùng
      */
     @PostMapping("/public/auth/register")
     public ResponseEntity<ApiResult<Long>> register(@RequestBody UserCreateRequest request) {
@@ -37,9 +36,7 @@ public class AuthController extends ApiBaseController {
     }
 
     /**
-     * 
-     * @param loginInput Thông tin đăng nhập của người dùng.
-     * @return Token xác thực nếu đăng nhập thành công.
+     * API login
      */
     @PostMapping("/public/auth/login")
     public ResponseEntity<ApiResult<TokenResponse>> login(@RequestBody LoginRequest request) {
@@ -50,8 +47,6 @@ public class AuthController extends ApiBaseController {
                             request.getPassword()));
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             TokenResponse tokens = tokenService.generateTokens(userDetails);
-
-            // Tạo HttpOnly Cookie cho Refresh Token
             ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
                     .httpOnly(true)
                     .secure(false)
@@ -69,8 +64,7 @@ public class AuthController extends ApiBaseController {
     }
 
     /**
-     * 
-     * @return Thông tin người dùng hiện tại.
+     * API lấy thông tin người dùng đăng nhập
      */
     @GetMapping("/auth/get-info")
     public ResponseEntity<ApiResult<LoginGetResponse>> getCurrentUser(Authentication authentication) {
@@ -79,39 +73,23 @@ public class AuthController extends ApiBaseController {
     }
 
     /**
-     * 
-     * @param token          Refresh token để đăng xuất.
-     * @param servletRequest Yêu cầu HTTP hiện tại.
-     * @return Phản hồi thành công khi đăng xuất.
+     * API logout
      */
     @DeleteMapping("/public/auth/logout")
     public ResponseEntity<ApiResult<Void>> logout(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,
             @CookieValue(name = "refreshToken", required = false) String refreshToken) {
-
-        /**
-         * Lấy Access Token từ header
-         */
         String accessToken = null;
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             accessToken = authHeader.substring(7);
         }
-
-        /**
-         * Gọi service để xử lý Blacklist cả 2 token
-         */
         authService.logout(accessToken, refreshToken);
-
-        /**
-         * Xóa Cookie ở client bằng cách set maxAge = 0
-         */
         ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
                 .maxAge(0)
                 .build();
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
                 .body(ApiResult.success(null, "Đăng xuất thành công"));

@@ -1,12 +1,10 @@
 package com.datn.moneyai.services.interfaces;
 
-import java.util.Optional;
-
-import com.datn.moneyai.models.dtos.categories.CategoryCreateRequest;
-import com.datn.moneyai.models.entities.bases.CategoryEntity;
+import com.datn.moneyai.models.dtos.category.CategoryRequest;
+import com.datn.moneyai.models.dtos.category.CategoryResponse;
 
 public interface ICategoryService {
-    CategoryEntity createCategory(CategoryCreateRequest request);
+    CategoryResponse createCategory(CategoryRequest request);
 
-    void updateCategory(Long id, CategoryCreateRequest request);
+    CategoryResponse updateCategory(Long id, CategoryRequest request);
 }

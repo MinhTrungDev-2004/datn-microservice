@@ -1,4 +1,4 @@
-package com.datn.moneyai.models.dtos.categories;
+package com.datn.moneyai.models.dtos.category;
 
 import com.datn.moneyai.models.entities.enums.CategoryType;
 import lombok.Data;
@@ -8,9 +8,7 @@ import lombok.Setter;
 @Data
 @Setter
 @Getter
-public class CategoryCreateRequest {
-
-    private Long id;
+public class CategoryRequest {
 
     private String name;
 
