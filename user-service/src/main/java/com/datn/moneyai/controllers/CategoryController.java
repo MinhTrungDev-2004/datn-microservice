@@ -15,19 +15,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.datn.moneyai.models.global.ApiResult;
 import com.datn.moneyai.services.interfaces.ICategoryService;
+
+import lombok.AllArgsConstructor;
+
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/category")
 public class CategoryController extends ApiBaseController {
     private final ICategoryService categoryService;
-
-    /*
-     * Hàm Khởi tạo Constructor
-     */
-    public CategoryController(ICategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
 
     /*
      * API tạo mới danh mục category
@@ -37,6 +34,7 @@ public class CategoryController extends ApiBaseController {
         CategoryResponse data = categoryService.createCategory(request);
         return ResponseEntity.ok(ApiResult.success(data, "Tạo danh mục thành công"));
     }
+
     /*
      * API chỉ sửa category by id
      */

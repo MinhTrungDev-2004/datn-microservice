@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class LoginRequest {
 
-    @Schema(example = "admin@gmail.com")
+    @Schema(example = "pa@gmail.com")
     private String email;
 
     @Schema(example = "123456789")
