@@ -6,19 +6,18 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
 import com.datn.moneyai.models.entities.bases.CategoryEntity;
-
-import io.lettuce.core.dynamic.annotation.Param;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
     @Query("SELECT c FROM CategoryEntity c WHERE c.id = :id")
     Optional<CategoryEntity> findCategoryById(@Param("id") Long id);
 
-    @Query("SELECT c FROM CategoryEntity c WHERE c.id = :id AND c.isDeleted = false")
+    @Query("SELECT c FROM CategoryEntity c WHERE c.id = :id AND (c.isDeleted = false OR c.isDeleted IS NULL)")
     Optional<CategoryEntity> findActiveCategoryById(@Param("id") Long id);
 
-    @Query("SELECT c FROM CategoryEntity c WHERE c.isDeleted = false")
+    @Query("SELECT c FROM CategoryEntity c WHERE (c.isDeleted = false OR c.isDeleted IS NULL)")
     List<CategoryEntity> findAllActiveCategories();
 }

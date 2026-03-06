@@ -3,7 +3,7 @@ package com.datn.moneyai.models.dtos.transaction;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import com.datn.moneyai.models.entities.bases.CategoryEntity;
+import com.datn.moneyai.models.entities.enums.CategoryType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,11 @@ public class TransactionResponse {
 
     private Long id;
 
-    private CategoryEntity category;
+    private Long categoryId;
+
+    private String categoryName;
+    
+    private CategoryType categoryType;
 
     private BigDecimal amount;
 

@@ -17,7 +17,7 @@ spring:
                 - id: user-service-protected
                   uri: lb://USER-SERVICE
                   predicates:
-                      - Path=/auth/**, /category/**
+                      - Path=/auth/**, /category/**, /transaction/**
 
                 # 3. Route lấy dữ liệu JSON Swagger của User Service
                 - id: openapi-user-service
