@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
@@ -18,7 +19,7 @@ public class UserServiceApplication {
         SpringApplication.run(UserServiceApplication.class, args);
     }
 
-    @org.springframework.context.annotation.Bean
+    @Bean
     CommandLineRunner seedRoles(RoleRepository roleRepository) {
         return args -> {
             for (RoleName rn : RoleName.values()) {

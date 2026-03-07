@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 import com.datn.moneyai.models.entities.enums.CategoryType;
 
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class TransactionResponse {
     
     private CategoryType categoryType;
 
+    @Positive(message = "Số tiền phải lớn hơn 0")
     private BigDecimal amount;
 
     private LocalDate transactionDate;

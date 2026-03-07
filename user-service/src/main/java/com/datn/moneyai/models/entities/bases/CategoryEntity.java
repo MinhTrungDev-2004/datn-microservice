@@ -29,8 +29,4 @@ public class CategoryEntity extends BaseEntity {
 
     private String icon;
     private String colorCode;
-
-    @Column(name = "is_deleted")
-    @Builder.Default
-    private boolean isDeleted = false;
 }

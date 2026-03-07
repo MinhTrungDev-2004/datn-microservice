@@ -35,8 +35,4 @@ public class SavingGoal extends BaseEntity {
     @Column(length = 20)
     @Builder.Default
     private SavingGoalStatus status = SavingGoalStatus.ONGOING;
-
-    @Column(name = "is_deleted")
-    @Builder.Default
-    private boolean isDeleted = false;
 }

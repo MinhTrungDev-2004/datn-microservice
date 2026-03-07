@@ -28,7 +28,7 @@ public class TransactionEntity extends BaseEntity {
     private CategoryEntity category;
 
     @Column(nullable = false, precision = 19, scale = 4)
-    private BigDecimal amount;
+    private BigDecimal totalAmount;
 
     @Column(nullable = false)
     private LocalDate transactionDate;
@@ -37,9 +37,6 @@ public class TransactionEntity extends BaseEntity {
     private String note;
 
     private String source;
-    private String referenceId;
 
-    @Column(name = "is_deleted")
-    @Builder.Default
-    private boolean isDeleted = false;
+    private String referenceId;
 }

@@ -33,8 +33,4 @@ public class Budget extends BaseEntity {
 
     @Column(nullable = false)
     private Integer year;
-
-    @Column(name = "is_deleted")
-    @Builder.Default
-    private boolean isDeleted = false;
 }

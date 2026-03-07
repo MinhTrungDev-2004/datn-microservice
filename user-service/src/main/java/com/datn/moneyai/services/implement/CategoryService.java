@@ -116,7 +116,6 @@ public class CategoryService implements ICategoryService {
     public void deleteCategory(Long id) {
         CategoryEntity existingCategory = categoryRepository.findActiveCategoryById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục hoặc danh mục đã bị xóa!"));
-        existingCategory.setDeleted(true);
         categoryRepository.save(existingCategory);
     }
 

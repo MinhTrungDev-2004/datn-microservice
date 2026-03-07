@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserCreateRequest {
 
-    @Schema(example = "Ngô Minh Trung")
+    @Schema(example = "Phạm Phương Anh")
     @NotBlank(message = "Vui lòng nhập tên")
     private String name;
 
-    @Schema(example = "pa@gmail.com")
+    @Schema(example = "phamphuonganh@gmail.com")
     @NotBlank(message = "Vui lòng nhập email")
     private String email;
 
@@ -30,7 +30,7 @@ public class UserCreateRequest {
     @NotBlank(message = "Vui lòng nhập vai trò")
     private String role;
 
-    @Schema(example = "")
+    @Schema(example = "https://example.com/avatar.jpg")
     private String avatarUrl;
 
     @Schema(example = "VND")

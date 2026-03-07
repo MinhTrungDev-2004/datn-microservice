@@ -15,9 +15,9 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
     @Query("SELECT c FROM CategoryEntity c WHERE c.id = :id")
     Optional<CategoryEntity> findCategoryById(@Param("id") Long id);
 
-    @Query("SELECT c FROM CategoryEntity c WHERE c.id = :id AND (c.isDeleted = false OR c.isDeleted IS NULL)")
+    @Query("SELECT c FROM CategoryEntity c WHERE c.id = :id")
     Optional<CategoryEntity> findActiveCategoryById(@Param("id") Long id);
 
-    @Query("SELECT c FROM CategoryEntity c WHERE (c.isDeleted = false OR c.isDeleted IS NULL)")
+    @Query("SELECT c FROM CategoryEntity c")
     List<CategoryEntity> findAllActiveCategories();
 }

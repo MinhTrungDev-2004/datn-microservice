@@ -48,7 +48,7 @@ public class CategoryController extends ApiBaseController {
     /*
      * API lấy danh sách category
      */
-    @GetMapping("/get-all")
+        @GetMapping("/gets-all")
     public ResponseEntity<ApiResult<List<CategoryResponse>>> getAllCategory() {
         List<CategoryResponse> data = categoryService.getsCategory();
         return ResponseEntity.ok(ApiResult.success(data, "Lấy danh sách danh mục thành công"));
