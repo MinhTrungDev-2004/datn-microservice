@@ -6,9 +6,8 @@ import com.datn.moneyai.models.dtos.budget.BudgetRequest;
 import com.datn.moneyai.models.dtos.budget.BudgetResponse;
 import com.datn.moneyai.models.global.ApiResult;
 import com.datn.moneyai.services.interfaces.IBudgetService;
-
 import lombok.AllArgsConstructor;
-
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,68 +24,84 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class BudgetController extends ApiBaseController {
     private final IBudgetService budgetService;
 
-    /*
-     * API tạo mới budget
+    /**
+     * API tạo mới một ngân sách.
+     * 
+     * @param request Dữ liệu đầu vào chứa thông tin ngân sách cần tạo (tháng,
+     *                năm,số tiền, danh mục).
+     * @return ResponseEntity chứa ApiResult mang theo đối tượng BudgetResponse vừa
+     *         được tạo.
      */
     @PostMapping("/create")
     public ResponseEntity<ApiResult<BudgetResponse>> createBudget(@RequestBody BudgetRequest request) {
-        return exeResponseEntity(() -> ApiResult.success(
-                budgetService.createBudget(request),
-                "Tạo ngân sách thành công"));
+        return exeResponseEntity(() -> budgetService.createBudget(request));
     }
 
-    /*
-     * API cập nhật budget
+    /**
+     * API cập nhật thông tin ngân sách.
+     * 
+     * @param id      ID của ngân sách cần cập nhật.
+     * @param request Dữ liệu đầu vào chứa thông tin ngân sách cần cập nhật.
+     * @return ResponseEntity chứa ApiResult mang theo đối tượng BudgetResponse vừa
+     *         được cập nhật.
      */
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResult<BudgetResponse>> updateBudget(@PathVariable Long id,
             @RequestBody BudgetRequest request) {
-        return exeResponseEntity(() -> ApiResult.success(
-                budgetService.updateBudget(id, request),
-                "Cập nhật ngân sách thành công"));
+        return exeResponseEntity(() -> budgetService.updateBudget(id, request));
     }
 
-    /*
-     * API lấy ngân sách theo id
+    /**
+     * API lấy thông tin một ngân sách theo ID.
+     * 
+     * @param id ID của ngân sách cần lấy thông tin.
+     * @return ResponseEntity chứa ApiResult mang theo đối tượng BudgetResponse vừa
+     *         được lấy.
      */
     @GetMapping("/get/{id}")
     public ResponseEntity<ApiResult<BudgetResponse>> getBudget(@PathVariable Long id) {
-        return exeResponseEntity(() -> ApiResult.success(
-                budgetService.getBudget(id), "Lấy ngân sách thành công"));
+        return exeResponseEntity(() -> budgetService.getBudget(id));
     }
 
-    /*
-     * API lấy ngân sách theo danh mục (mặc định tháng/năm hiện tại)
+    /**
+     * API lấy thông tin ngân sách theo danh mục.
+     * 
+     * @param categoryId ID của danh mục.
+     * @param month      Tháng cần lọc.
+     * @param year       Năm cần lọc.
+     * @return ResponseEntity chứa ApiResult mang theo đối tượng BudgetResponse vừa
+     *         được lấy.
      */
     @GetMapping("/by-category/{categoryId}")
     public ResponseEntity<ApiResult<BudgetResponse>> getByCategory(@PathVariable Long categoryId,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year) {
-        return exeResponseEntity(() -> ApiResult.success(
-                budgetService.getBudgetByCategory(categoryId, month, year),
-                "Lấy ngân sách theo danh mục thành công"));
+        return exeResponseEntity(() -> budgetService.getBudgetByCategory(categoryId, month, year));
     }
 
-    /*
-     * API lấy danh sách ngân sách theo tháng/năm
+    /**
+     * API lấy danh sách tất cả ngân sách.
+     * 
+     * @param month Tháng cần lọc.
+     * @param year  Năm cần lọc.
+     * @return ResponseEntity chứa ApiResult mang theo danh sách đối tượng
+     *         BudgetResponse.
      */
     @GetMapping("/gets-all")
-    public ResponseEntity<ApiResult<java.util.List<BudgetResponse>>> listBudgets(
+    public ResponseEntity<ApiResult<List<BudgetResponse>>> listBudgets(
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year) {
-        return exeResponseEntity(() -> ApiResult.success(
-                budgetService.listBudgets(month, year),
-                "Lấy danh sách ngân sách thành công"));
+        return exeResponseEntity(() -> budgetService.listBudgets(month, year));
     }
 
-    /*
-     * API xóa ngân sách
+    /**
+     * API xóa một ngân sách theo ID.
+     * 
+     * @param id ID của ngân sách cần xóa.
+     * @return ResponseEntity chứa ApiResult mang theo thông báo kết quả xóa.
      */
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ApiResult<Void>> deleteBudget(@PathVariable Long id) {
-        return exeResponseEntity(() -> {
-            budgetService.deleteBudget(id);
-            return ApiResult.success(null, "Xóa ngân sách thành công");
-        });
+        return exeResponseEntity(() -> budgetService.deleteBudget(id));
     }
 }

@@ -8,63 +8,59 @@ import com.datn.moneyai.models.security.JwtTokenProvider;
 import com.datn.moneyai.models.security.UserPrincipal;
 import com.datn.moneyai.repositories.UserRepository;
 import com.datn.moneyai.services.interfaces.ITokenService;
+import lombok.AllArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
 import java.util.concurrent.TimeUnit;
 
 @Service
+@AllArgsConstructor
 public class TokenService implements ITokenService {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
-
-    // Sử dụng StringRedisTemplate của Spring Boot để lưu token hợp lệ
     private final StringRedisTemplate redisTemplate;
 
-    public TokenService(JwtTokenProvider jwtTokenProvider,
-                        UserRepository userRepository,
-                        StringRedisTemplate redisTemplate) {
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.userRepository = userRepository;
-        this.redisTemplate = redisTemplate;
-    }
-
+    /**
+     * Tạo mới Access Token và Refresh Token cho người dùng dựa trên thông tin
+     * UserDetails.
+     * 
+     * @param userDetails Thông tin chi tiết của người dùng (UserDetails).
+     * @return ApiResult mang theo đối tượng TokenResponse chứa Access Token và
+     *         Refresh Token.
+     */
     @Override
-    public TokenResponse generateTokens(UserDetails userDetails) {
-        // 1. Tạo Access Token và Refresh Token
+    public ApiResult<TokenResponse> generateTokens(UserDetails userDetails) {
         String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
         String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
-
-        // 2. Tính toán thời gian sống (TTL) của Refresh Token
         long ttlSeconds = Math.max(0,
                 (jwtTokenProvider.extractExpiration(refreshToken).getTime() - System.currentTimeMillis()) / 1000);
-
-        // 3. LƯU REFRESH TOKEN VÀO REDIS (KEY HỢP LỆ)
         if (ttlSeconds > 0) {
-            // Đặt tên Key là: refreshToken:{email_nguoi_dung}
             String redisKey = "refreshToken:" + userDetails.getUsername();
-
-            // Lưu vào Redis với giá trị là token và thời gian hết hạn
             redisTemplate.opsForValue().set(redisKey, refreshToken, ttlSeconds, TimeUnit.SECONDS);
         }
-
-        return TokenResponse.builder()
+        return ApiResult.success(TokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtTokenProvider.extractExpiration(accessToken).getTime())
-                .build();
+                .build(), "Tạo token thành công");
     }
 
+    /**
+     * Lấy thông tin người dùng hiện tại dựa trên Authentication và trả về dưới
+     * dạng LoginGetResponse.
+     *
+     * @param authentication Thông tin xác thực của người dùng hiện tại.
+     * @return ApiResult mang theo đối tượng LoginGetResponse chứa thông tin người
+     *         dùng.
+     */
     @Override
     public ApiResult<LoginGetResponse> getUserInfo(Authentication authentication) {
         Long userId = getUserIdFromAuthentication(authentication);
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với id: " + userId));
-
         LoginGetResponse response = LoginGetResponse.builder()
                 .fullName(user.getFullName())
                 .email(user.getEmail())
@@ -75,6 +71,14 @@ public class TokenService implements ITokenService {
         return ApiResult.success(response, "Lấy thông tin người dùng thành công");
     }
 
+    /**
+     * Hàm phụ trợ để trích xuất userId từ Authentication.
+     *
+     * @param authentication Thông tin xác thực của người dùng hiện tại.
+     * @return userId của người dùng.
+     * @throws IllegalArgumentException nếu không thể lấy thông tin người dùng từ
+     *                                  Authentication.
+     */
     private Long getUserIdFromAuthentication(Authentication authentication) {
         Object principal = authentication.getPrincipal();
         if (principal instanceof UserPrincipal userPrincipal) {

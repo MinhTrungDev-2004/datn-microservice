@@ -2,18 +2,19 @@ package com.datn.moneyai.services.interfaces;
 
 import com.datn.moneyai.models.dtos.budget.BudgetRequest;
 import com.datn.moneyai.models.dtos.budget.BudgetResponse;
+import com.datn.moneyai.models.global.ApiResult;
 import java.util.List;
 
 public interface IBudgetService {
-    BudgetResponse createBudget(BudgetRequest request);
+    ApiResult<BudgetResponse> createBudget(BudgetRequest request);
 
-    BudgetResponse updateBudget(Long id, BudgetRequest request);
+    ApiResult<BudgetResponse> updateBudget(Long id, BudgetRequest request);
 
-    BudgetResponse getBudget(Long id);
+    ApiResult<BudgetResponse> getBudget(Long id);
 
-    BudgetResponse getBudgetByCategory(Long categoryId, Integer month, Integer year);
+    ApiResult<BudgetResponse> getBudgetByCategory(Long categoryId, Integer month, Integer year);
 
-    List<BudgetResponse> listBudgets(Integer month, Integer year);
+    ApiResult<List<BudgetResponse>> listBudgets(Integer month, Integer year);
 
-    void deleteBudget(Long id);
+    ApiResult<Void> deleteBudget(Long id);
 }

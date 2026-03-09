@@ -6,6 +6,7 @@ import com.datn.moneyai.models.dtos.budget.BudgetResponse;
 import com.datn.moneyai.models.entities.bases.Budget;
 import com.datn.moneyai.models.entities.bases.CategoryEntity;
 import com.datn.moneyai.models.entities.bases.User;
+import com.datn.moneyai.models.global.ApiResult;
 import com.datn.moneyai.repositories.BudgetRepository;
 import com.datn.moneyai.repositories.CategoryRepository;
 import com.datn.moneyai.repositories.UserRepository;
@@ -20,13 +21,21 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class BudgetService implements IBudgetService {
-
     private final BudgetRepository budgetRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Tạo mới một ngân sách.
+     *
+     * @param request Dữ liệu đầu vào chứa thông tin ngân sách cần tạo (tháng,
+     *                năm, số tiền, danh mục).
+     * @return ApiResult mang theo đối tượng BudgetResponse vừa được tạo.
+     * @throws UserMessageException Nếu thiếu thông tin bắt buộc hoặc không tìm
+     *                              thấy danh mục.
+     */
     @Override
-    public BudgetResponse createBudget(BudgetRequest request) {
+    public ApiResult<BudgetResponse> createBudget(BudgetRequest request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
@@ -58,11 +67,20 @@ public class BudgetService implements IBudgetService {
                 .year(request.getYear())
                 .build();
         Budget saved = budgetRepository.save(budget);
-        return toResponse(saved);
+        return ApiResult.success(toResponse(saved), "Tạo ngân sách thành công");
     }
 
+    /**
+     * Cập nhật thông tin ngân sách.
+     *
+     * @param id      ID của ngân sách cần cập nhật.
+     * @param request Dữ liệu đầu vào chứa thông tin ngân sách cần cập nhật.
+     * @return ApiResult mang theo đối tượng BudgetResponse vừa được cập nhật.
+     * @throws UserMessageException Nếu không tìm thấy ngân sách hoặc danh mục mới
+     *                              không hợp lệ.
+     */
     @Override
-    public BudgetResponse updateBudget(Long id, BudgetRequest request) {
+    public ApiResult<BudgetResponse> updateBudget(Long id, BudgetRequest request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
@@ -97,22 +115,40 @@ public class BudgetService implements IBudgetService {
                 });
 
         Budget saved = budgetRepository.save(budget);
-        return toResponse(saved);
+        return ApiResult.success(toResponse(saved), "Cập nhật ngân sách thành công");
     }
 
+    /**
+     * Lấy thông tin một ngân sách theo ID.
+     *
+     * @param id ID của ngân sách cần lấy thông tin.
+     * @return ApiResult mang theo đối tượng BudgetResponse vừa được lấy.
+     * @throws UserMessageException Nếu không tìm thấy ngân sách hoặc người dùng
+     *                              không có quyền truy cập.
+     */
     @Override
-    public BudgetResponse getBudget(Long id) {
+    public ApiResult<BudgetResponse> getBudget(Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
 
         Budget budget = budgetRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy ngân sách."));
-        return toResponse(budget);
+        return ApiResult.success(toResponse(budget), "Lấy ngân sách thành công");
     }
 
+    /**
+     * Lấy thông tin ngân sách theo danh mục.
+     *
+     * @param categoryId ID của danh mục.
+     * @param month      Tháng cần lọc.
+     * @param year       Năm cần lọc.
+     * @return ApiResult mang theo đối tượng BudgetResponse vừa được lấy.
+     * @throws UserMessageException Nếu không tìm thấy ngân sách hoặc người dùng
+     *                              không có quyền truy cập.
+     */
     @Override
-    public BudgetResponse getBudgetByCategory(Long categoryId, Integer month, Integer year) {
+    public ApiResult<BudgetResponse> getBudgetByCategory(Long categoryId, Integer month, Integer year) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
@@ -126,11 +162,20 @@ public class BudgetService implements IBudgetService {
 
         Budget budget = budgetRepository.findByUserAndCategoryAndMonthAndYear(user.getId(), categoryId, m, y)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy ngân sách theo danh mục."));
-        return toResponse(budget);
+        return ApiResult.success(toResponse(budget), "Lấy ngân sách theo danh mục thành công");
     }
 
+    /**
+     * Lấy danh sách tất cả ngân sách.
+     *
+     * @param month Tháng cần lọc.
+     * @param year  Năm cần lọc.
+     * @return ApiResult mang theo danh sách đối tượng BudgetResponse.
+     * @throws UserMessageException Nếu không tìm thấy ngân sách hoặc người dùng
+     *                              không có quyền truy cập.
+     */
     @Override
-    public List<BudgetResponse> listBudgets(Integer month, Integer year) {
+    public ApiResult<List<BudgetResponse>> listBudgets(Integer month, Integer year) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
@@ -139,12 +184,20 @@ public class BudgetService implements IBudgetService {
         int m = month != null ? month : now.getMonthValue();
         int y = year != null ? year : now.getYear();
 
-        return budgetRepository.findAllByUserAndMonthAndYear(user.getId(), m, y)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+        return ApiResult.success(budgetRepository.findAllByUserAndMonthAndYear(user.getId(), m, y)
+                .stream().map(this::toResponse).collect(Collectors.toList()), "Lấy danh sách ngân sách thành công");
     }
 
+    /**
+     * Xóa ngân sách theo ID.
+     *
+     * @param id ID của ngân sách cần xóa.
+     * @return ApiResult mang theo null nếu xóa thành công.
+     * @throws UserMessageException Nếu không tìm thấy ngân sách hoặc người dùng
+     *                              không có quyền truy cập.
+     */
     @Override
-    public void deleteBudget(Long id) {
+    public ApiResult<Void> deleteBudget(Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
@@ -152,8 +205,15 @@ public class BudgetService implements IBudgetService {
         Budget budget = budgetRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy ngân sách."));
         budgetRepository.delete(budget);
+        return ApiResult.success(null, "Xóa ngân sách thành công");
     }
 
+    /**
+     * Chuyển đổi từ đối tượng Budget sang BudgetResponse.
+     *
+     * @param budget Đối tượng Budget cần chuyển đổi.
+     * @return Đối tượng BudgetResponse tương ứng với Budget đầu vào.
+     */
     private BudgetResponse toResponse(Budget budget) {
         BudgetResponse res = new BudgetResponse();
         res.setId(budget.getId());
@@ -165,5 +225,5 @@ public class BudgetService implements IBudgetService {
         res.setCreatedAt(budget.getCreatedAt());
         res.setUpdatedAt(budget.getUpdatedAt());
         return res;
-        }
+    }
 }

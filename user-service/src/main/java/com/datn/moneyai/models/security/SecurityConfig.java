@@ -1,7 +1,6 @@
 package com.datn.moneyai.models.security;
 
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,9 +23,15 @@ import java.util.List;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /**
+     * Cấu hình chuỗi bộ lọc bảo mật cho ứng dụng.
+     *
+     * @param http HttpSecurity để cấu hình bảo mật.
+     * @return SecurityFilterChain đã được cấu hình.
+     * @throws Exception Nếu có lỗi trong quá trình cấu hình bảo mật.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -47,6 +52,11 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Cấu hình CORS cho ứng dụng.
+     *
+     * @return CorsConfigurationSource chứa cấu hình CORS.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -60,11 +70,23 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Bean PasswordEncoder sử dụng BCrypt để mã hóa mật khẩu.
+     *
+     * @return PasswordEncoder instance.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Bean AuthenticationManager để quản lý quá trình xác thực người dùng.
+     *
+     * @param config Cấu hình xác thực được cung cấp bởi Spring Security.
+     * @return AuthenticationManager instance.
+     * @throws Exception Nếu có lỗi trong quá trình tạo AuthenticationManager.
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

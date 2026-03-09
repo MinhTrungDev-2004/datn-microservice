@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -33,10 +32,17 @@ public class AuthService implements IAuthService {
     private final RoleRepository roleRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenBlackListRepository tokenBlackListRepository;
-
-    // Bổ sung StringRedisTemplate để xóa token hợp lệ
     private final StringRedisTemplate redisTemplate;
 
+    /**
+     * Tạo mới một tài khoản người dùng hoặc quản trị viên (Admin).
+     *
+     * @param request Dữ liệu đầu vào chứa thông tin đăng ký (email, password,
+     *                role).
+     * @return ApiResult mang theo ID của người dùng vừa được tạo thành công.
+     * @throws UserMessageException Nếu email đã tồn tại hoặc vai trò (role) không
+     *                              hợp lệ.
+     */
     @Override
     public ApiResult<Long> createUser(UserCreateRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -71,6 +77,13 @@ public class AuthService implements IAuthService {
         return ApiResult.success(newUser.getId(), "Đăng ký thành công.");
     }
 
+    /**
+     * Lấy danh sách những người dùng có quyền hệ thống (loại trừ các User thông
+     * thường).
+     * Kết quả trả về sẽ được sắp xếp theo thời gian cập nhật mới nhất.
+     *
+     * @return ApiResult chứa danh sách (List) các đối tượng UserGetsResponse.
+     */
     @Override
     public ApiResult<List<UserGetsResponse>> getUser() {
         List<User> users = userRepository.findByUserRoles_Role_NameNot(RoleName.USER);
@@ -94,33 +107,39 @@ public class AuthService implements IAuthService {
     }
 
     @Override
-    public void logout(String accessToken, String refreshToken) {
+    /**
+     * Xử lý đăng xuất người dùng bằng cách vô hiệu hóa Access Token và Refresh
+     * Token.
+     *
+     * @param accessToken  Token truy cập hiện tại của người dùng.
+     * @param refreshToken Token làm mới của người dùng cần được thu hồi.
+     * @return ApiResult<Void> mang theo trạng thái và thông báo đăng xuất thành
+     *         công.
+     */
+    public ApiResult<Void> logout(String accessToken, String refreshToken) {
         // 1. Đưa Access Token vào Blacklist
         if (accessToken != null && !accessToken.trim().isEmpty()) {
             blacklistToken(accessToken);
         }
-
-        // 2. Xử lý Refresh Token: Xóa khỏi danh sách hợp lệ và đưa vào Blacklist
         if (refreshToken != null && !refreshToken.trim().isEmpty()) {
             try {
-                // Lấy email (username) từ token để tìm đúng Key trong Redis
                 String username = jwtTokenProvider.extractUsername(refreshToken);
                 String redisKey = "refreshToken:" + username;
-
-                // Xóa Refresh Token hợp lệ khỏi Redis
                 redisTemplate.delete(redisKey);
                 log.info("Đã xóa Refresh Token hợp lệ của user: {}", username);
             } catch (Exception e) {
                 log.warn("Không thể trích xuất username từ Refresh Token hoặc lỗi khi xóa Redis: {}", e.getMessage());
             }
-
-            // Đưa Refresh Token này vào Blacklist để đề phòng bị sử dụng lại
             blacklistToken(refreshToken);
         }
+        return ApiResult.success(null, "Đăng xuất thành công");
     }
 
     /**
-     * Hàm dùng chung để tính toán thời gian và đưa Token vào Redis (Blacklist)
+     * Hàm phụ trợ tính toán thời gian sống còn lại và đưa Token vào Redis
+     * (Blacklist).
+     *
+     * @param token Chuỗi token (Access Token hoặc Refresh Token) cần vô hiệu hóa.
      */
     private void blacklistToken(String token) {
         try {
@@ -135,7 +154,6 @@ public class AuthService implements IAuthService {
                 log.info("Đã đưa token vào blacklist với thời gian sống (giây): {}", expirationSeconds);
             }
         } catch (Exception e) {
-            // Nếu token đã hết hạn sẵn hoặc không parse được, ta bỏ qua không cần đưa vào Blacklist nữa
             log.warn("Lỗi khi đưa token vào blacklist hoặc token đã hết hạn: {}", e.getMessage());
         }
     }

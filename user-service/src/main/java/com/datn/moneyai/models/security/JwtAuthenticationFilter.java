@@ -26,6 +26,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/public/auth/login",
             "/public/auth/logout");
 
+    /**
+     * Lọc JWT từ header Authorization và thiết lập Authentication trong
+     * SecurityContext nếu token hợp lệ.
+     *
+     * @param request     Yêu cầu HTTP hiện tại.
+     * @param response    Phản hồi HTTP hiện tại.
+     * @param filterChain Chuỗi bộ lọc để tiếp tục xử lý yêu cầu.
+     * @throws ServletException Nếu có lỗi trong quá trình xử lý bộ lọc.
+     * @throws IOException      Nếu có lỗi I/O trong quá trình xử lý bộ lọc.
+     */
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -66,7 +76,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // Kiểm tra xem có cần bỏ qua path hiện tại hay không
+    /**
+     * Kiểm tra xem đường dẫn có thuộc danh sách các đường dẫn cần bỏ qua hay không.
+     * 
+     * @param path Đường dẫn của yêu cầu hiện tại.
+     * @return true nếu đường dẫn nên bỏ qua, false nếu không nên bỏ qua.
+     */
     private boolean shouldSkipFilter(String path) {
         return EXCLUDED_PATHS.stream().anyMatch(path::startsWith);
     }

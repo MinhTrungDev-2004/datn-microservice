@@ -8,6 +8,14 @@ import java.util.function.Supplier;
 
 @Controller
 public abstract class ApiBaseController {
+    /**
+     * Phương thức tiện ích để thực thi một Supplier trả về ApiResult và đóng gói
+     * nó vào ResponseEntity.
+     *
+     * @param supplier Supplier chứa logic thực thi và trả về ApiResult.
+     * @param <T>      Kiểu dữ liệu của ApiResult.
+     * @return ResponseEntity chứa ApiResult với dữ liệu hoặc lỗi nếu có.
+     */
     protected <T> ResponseEntity<ApiResult<T>> exeResponseEntity(Supplier<ApiResult<T>> supplier) {
         try {
             ApiResult<T> result = supplier.get();

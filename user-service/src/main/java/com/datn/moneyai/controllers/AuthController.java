@@ -26,9 +26,12 @@ public class AuthController extends ApiBaseController {
     private final ITokenService tokenService;
     private final IAuthService authService;
 
-
     /**
-     * API tạo mới người dùng
+     * API đăng ký người dùng mới.
+     *
+     * @param request Dữ liệu đầu vào chứa thông tin người dùng cần đăng ký.
+     * @return ResponseEntity chứa ApiResult mang theo ID của người dùng vừa được
+     *         tạo.
      */
     @PostMapping("/public/auth/register")
     public ResponseEntity<ApiResult<Long>> register(@RequestBody UserCreateRequest request) {
@@ -36,7 +39,11 @@ public class AuthController extends ApiBaseController {
     }
 
     /**
-     * API login
+     * API đăng nhập người dùng.
+     *
+     * @param request Dữ liệu đầu vào chứa thông tin đăng nhập (email và mật khẩu).
+     * @return ResponseEntity chứa ApiResult mang theo TokenResponse nếu đăng nhập
+     *         thành công, hoặc lỗi nếu đăng nhập thất bại.
      */
     @PostMapping("/public/auth/login")
     public ResponseEntity<ApiResult<TokenResponse>> login(@RequestBody LoginRequest request) {
@@ -46,8 +53,8 @@ public class AuthController extends ApiBaseController {
                             request.getEmail(),
                             request.getPassword()));
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            TokenResponse tokens = tokenService.generateTokens(userDetails);
-            ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
+            ApiResult<TokenResponse> tokens = tokenService.generateTokens(userDetails);
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getData().getRefreshToken())
                     .httpOnly(true)
                     .secure(false)
                     .path("/")
@@ -56,7 +63,7 @@ public class AuthController extends ApiBaseController {
                     .build();
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(ApiResult.success(tokens, "Đăng nhập thành công"));
+                    .body(ApiResult.success(tokens.getData(), "Đăng nhập thành công"));
         } catch (BadCredentialsException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResult.fail("Email hoặc mật khẩu không chính xác"));
@@ -64,7 +71,12 @@ public class AuthController extends ApiBaseController {
     }
 
     /**
-     * API lấy thông tin người dùng đăng nhập
+     * API lấy thông tin người dùng hiện tại dựa trên token xác thực.
+     *
+     * @param authentication Đối tượng Authentication chứa thông tin người dùng đã
+     *                       được xác thực.
+     * @return ResponseEntity chứa ApiResult mang theo đối tượng LoginGetResponse
+     *         với thông tin người dùng hiện tại.
      */
     @GetMapping("/auth/get-info")
     public ResponseEntity<ApiResult<LoginGetResponse>> getCurrentUser(Authentication authentication) {
@@ -72,9 +84,6 @@ public class AuthController extends ApiBaseController {
         return ResponseEntity.ok(result);
     }
 
-    /**
-     * API logout
-     */
     @DeleteMapping("/public/auth/logout")
     public ResponseEntity<ApiResult<Void>> logout(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader,

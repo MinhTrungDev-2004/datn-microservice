@@ -12,6 +12,7 @@ import com.datn.moneyai.models.entities.bases.TransactionEntity;
 import com.datn.moneyai.models.entities.bases.CategoryEntity;
 import com.datn.moneyai.models.entities.bases.User;
 import com.datn.moneyai.models.entities.enums.TransactionSource;
+import com.datn.moneyai.models.global.ApiResult;
 import com.datn.moneyai.repositories.CategoryRepository;
 import com.datn.moneyai.repositories.UserRepository;
 import com.datn.moneyai.repositories.TransactionRepository;
@@ -28,8 +29,18 @@ public class TransactionService implements ITransactionService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Tạo mới một giao dịch chi tiêu hoặc thu nhập.
+     *
+     * @param request Dữ liệu đầu vào chứa thông tin giao dịch cần tạo (số tiền,
+     *                ngày giao dịch, ghi chú, danh mục).
+     * @return ApiResult mang theo đối tượng TransactionResponse vừa được tạo thành
+     *         công.
+     * @throws UserMessageException Nếu dữ liệu yêu cầu không hợp lệ hoặc người dùng
+     *                              không có quyền sử dụng danh mục.
+     */
     @Override
-    public TransactionResponse createTransaction(TransactionRequest request) {
+    public ApiResult<TransactionResponse> createTransaction(TransactionRequest request) {
         if (request == null)
             throw new UserMessageException("Dữ liệu yêu cầu không hợp lệ");
         if (request.getAmount() == null || request.getAmount().signum() <= 0)
@@ -62,7 +73,7 @@ public class TransactionService implements ITransactionService {
 
         TransactionEntity savedTransaction = transactionRepository.save(transaction);
 
-        return TransactionResponse.builder()
+        return ApiResult.success(TransactionResponse.builder()
                 .id(savedTransaction.getId())
                 .categoryId(category.getId())
                 .categoryName(category.getName())
@@ -70,11 +81,20 @@ public class TransactionService implements ITransactionService {
                 .amount(savedTransaction.getTotalAmount())
                 .note(savedTransaction.getNote())
                 .transactionDate(savedTransaction.getTransactionDate())
-                .build();
+                .build(), "Tạo giao dịch thành công");
     }
 
+    /**
+     * Cập nhật thông tin một giao dịch chi tiêu hoặc thu nhập.
+     *
+     * @param id      ID của giao dịch cần cập nhật.
+     * @param request Dữ liệu đầu vào chứa thông tin giao dịch cần cập nhật (số
+     *                tiền, ngày giao dịch, ghi chú, danh mục).
+     * @return ApiResult mang theo đối tượng TransactionResponse vừa được cập nhật
+     *         thàng
+     */
     @Override
-    public TransactionResponse updateTransaction(Long id, TransactionUpdateRequest request) {
+    public ApiResult<TransactionResponse> updateTransaction(Long id, TransactionUpdateRequest request) {
         if (id == null)
             throw new UserMessageException("Thiếu id giao dịch");
 
@@ -107,7 +127,7 @@ public class TransactionService implements ITransactionService {
 
         TransactionEntity saved = transactionRepository.save(tx);
         CategoryEntity c = saved.getCategory();
-        return TransactionResponse.builder()
+        return ApiResult.success(TransactionResponse.builder()
                 .id(saved.getId())
                 .categoryId(c != null ? c.getId() : null)
                 .categoryName(c != null ? c.getName() : null)
@@ -115,11 +135,19 @@ public class TransactionService implements ITransactionService {
                 .amount(saved.getTotalAmount())
                 .note(saved.getNote())
                 .transactionDate(saved.getTransactionDate())
-                .build();
+                .build(), "Cập nhật giao dịch thành công");
     }
 
+    /**
+     * Xóa một giao dịch chi tiêu hoặc thu nhập.
+     *
+     * @param id ID của giao dịch cần xóa.
+     * @return ApiResult mang theo thông báo kết quả xóa.
+     * @throws UserMessageException Nếu ID không hợp lệ hoặc giao dịch không tồn tại
+     *                              hoặc đã bị xóa.
+     */
     @Override
-    public void deleteTransaction(Long id) {
+    public ApiResult<Void> deleteTransaction(Long id) {
         if (id == null)
             throw new UserMessageException("Thiếu id giao dịch");
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -128,17 +156,26 @@ public class TransactionService implements ITransactionService {
         TransactionEntity tx = transactionRepository.findActiveByIdAndUser(id, user.getId())
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy giao dịch hoặc đã bị xóa!"));
         transactionRepository.save(tx);
+        return ApiResult.success(null, "Xóa giao dịch thành công");
     }
 
+    /**
+     * Lấy danh sách các giao dịch chi tiêu hoặc thu nhập theo danh mục.
+     *
+     * @param categoryId ID của danh mục cần lấy giao dịch.
+     * @return ApiResult mang theo danh sách TransactionResponse của các giao dịch
+     *         thuộc danh mục, hoặc lỗi nếu có vấn đề với dữ liệu yêu cầu hoặc
+     *         quyền truy cập.
+     */
     @Override
-    public List<TransactionResponse> getTransactionsByCategory(Long categoryId) {
+    public ApiResult<List<TransactionResponse>> getTransactionsByCategory(Long categoryId) {
         if (categoryId == null)
             throw new UserMessageException("Thiếu id danh mục");
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
         List<TransactionEntity> list = transactionRepository.findAllActiveByCategoryAndUser(categoryId, user.getId());
-        return list.stream().map(t -> {
+        List<TransactionResponse> responseList = list.stream().map(t -> {
             CategoryEntity c = t.getCategory();
             return TransactionResponse.builder()
                     .id(t.getId())
@@ -150,31 +187,55 @@ public class TransactionService implements ITransactionService {
                     .note(t.getNote())
                     .build();
         }).toList();
+        return ApiResult.success(responseList, "Lấy danh sách giao dịch theo danh mục thành công");
     }
 
+    /**
+     * Lấy tổng số tiền của giao dịch theo danh mục trong tháng hiện tại
+     *
+     * @param categoryId ID của danh mục cần lấy tổng số tiền.
+     * @return ApiResult mang theo tổng số tiền của các giao dịch thuộc danh mục
+     *         trong tháng hiện tại, hoặc lỗi nếu có vấn đề với dữ liệu yêu cầu hoặc
+     *         quyền truy cập.
+     */
     @Override
-    public BigDecimal getTotalAmountByCategoryAndMonth(Long categoryId) {
+    public ApiResult<BigDecimal> getTotalAmountByCategoryAndMonth(Long categoryId) {
         if (categoryId == null)
             throw new UserMessageException("Thiếu id danh mục");
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
-        return transactionRepository.sumTotalAmountByCategoryAndMonth(categoryId, user.getId());
+        return ApiResult.success(transactionRepository.sumTotalAmountByCategoryAndMonth(categoryId, user.getId()),
+                "Lấy tổng số tiền theo danh mục và tháng thành công");
     }
 
+    /**
+     * Lấy tổng số tiền thu nhập của người dùng trong tháng hiện tại
+     *
+     * @return ApiResult mang theo tổng số tiền thu nhập của người dùng trong tháng
+     *         hiện tại, hoặc lỗi nếu có vấn đề với quyền truy cập.
+     */
     @Override
-    public BigDecimal calculateTotalIncome() {
+    public ApiResult<BigDecimal> calculateTotalIncome() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
-        return transactionRepository.calculateTotalIncome(user.getId());
+        return ApiResult.success(transactionRepository.calculateTotalIncome(user.getId()),
+                "Lấy tổng thu nhập thành công");
     }
 
+    /**
+     * Lấy tổng số tiền chi tiêu của người dùng theo danh mục trong tháng hiện tại
+     *
+     * @return ApiResult mang theo tổng số tiền chi tiêu của người dùng trong tháng
+     *         hiện tại, hoặc lỗi nếu có vấn đề với quyền truy cập.
+     */
     @Override
-    public BigDecimal calculateTotalExpense() {
+    public ApiResult<BigDecimal> calculateTotalExpense() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserMessageException("Không tìm thấy người dùng."));
-        return transactionRepository.calculateTotalExpense(user.getId());
+        return ApiResult.success(transactionRepository.calculateTotalExpense(user.getId()),
+                "Lấy tổng chi tiêu thành công");
     }
 }

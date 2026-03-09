@@ -11,5 +11,5 @@ public interface IAuthService {
 
     ApiResult<List<UserGetsResponse>> getUser();
 
-    void logout(String accessToken, String refreshToken);
+    ApiResult<Void> logout(String accessToken, String refreshToken);
 }
