@@ -3,8 +3,6 @@ package com.datn.moneyai.models.entities.bases;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "emails_raw")
 @Getter
@@ -22,7 +20,9 @@ public class EmailRaw extends BaseEntity {
     private User user;
 
     private String messageId;
+
     private String subject;
+
     private String sender;
 
     @Column(columnDefinition = "TEXT")

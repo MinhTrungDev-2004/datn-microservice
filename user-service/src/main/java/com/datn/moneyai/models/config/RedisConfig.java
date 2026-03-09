@@ -10,24 +10,22 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
+    /**
+     * Cấu hình RedisTemplate để sử dụng StringRedisSerializer cho key và
+     * GenericJackson2JsonRedisSerializer cho value.
+     * 
+     * @param connectionFactory RedisConnectionFactory để kết nối đến Redis.
+     * @return RedisTemplate đã được cấu hình.
+     */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
-
-        // Cấu hình Serializer cho Key: Lưu dưới dạng String thuần túy cho dễ đọc trên
-        // Redis GUI
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
-
-        // Cấu hình Serializer cho Value: Chuyển đổi Object (TokenBlackList) thành JSON
-        // để lưu
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
-
-        // Khởi tạo các thuộc tính sau khi đã set xong
         template.afterPropertiesSet();
-
         return template;
     }
 }

@@ -17,25 +17,9 @@ public interface ITransactionService {
 
     ApiResult<List<TransactionResponse>> getTransactionsByCategory(Long categoryId);
 
-    /**
-     * Lấy tổng số tiền của giao dịch theo danh mục trong tháng hiện tại
-     * 
-     * @param categoryId the ID of the category
-     * @return the total amount
-     */
     ApiResult<BigDecimal> getTotalAmountByCategoryAndMonth(Long categoryId);
 
-    /**
-     * Lấy tổng số tiền thu nhập của người dùng trong tháng hiện tại
-     * 
-     * @return the total income
-     */
     ApiResult<BigDecimal> calculateTotalIncome();
 
-    /**
-     * Lấy tổng số tiền chi tiêu của người dùng theo danh mục trong tháng hiện tại
-     * 
-     * @return the total expense
-     */
     ApiResult<BigDecimal> calculateTotalExpense();
 }
