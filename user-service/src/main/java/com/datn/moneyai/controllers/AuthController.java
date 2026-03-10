@@ -55,7 +55,7 @@ public class AuthController {
                             request.getPassword()));
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             ApiResult<TokenResponse> tokens = tokenService.generateTokens(userDetails);
-            ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getData().getRefreshToken())
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getData().getAccessToken())
                     .httpOnly(true)
                     .secure(false)
                     .path("/")

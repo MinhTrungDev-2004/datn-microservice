@@ -42,7 +42,6 @@ public class TokenService implements ITokenService {
         }
         return ApiResult.success(TokenResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtTokenProvider.extractExpiration(accessToken).getTime())
                 .build(), "Tạo token thành công");

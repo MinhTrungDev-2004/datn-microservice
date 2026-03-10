@@ -50,25 +50,18 @@ public class AuthService implements IAuthService {
         }
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
-        RoleName roleName;
-        try {
-            roleName = RoleName.valueOf(request.getRole().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new UserMessageException("Vai trò không hợp lệ. Vui lòng chọn USER hoặc ADMIN");
-        }
-
-        Role role = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new UserMessageException("Vai trò không hợp lệ."));
-
         User newUser = User.builder()
                 .email(request.getEmail())
                 .password(hashedPassword)
                 .isActive(true)
                 .build();
 
+        Role userRoleEntity = roleRepository.findByName(RoleName.USER)
+                .orElseThrow(() -> new UserMessageException("Lỗi hệ thống: Không tìm thấy quyền mặc định (USER)."));
+
         UserRole userRole = UserRole.builder()
                 .user(newUser)
-                .role(role)
+                .role(userRoleEntity)
                 .build();
         newUser.setUserRoles(Set.of(userRole));
 
