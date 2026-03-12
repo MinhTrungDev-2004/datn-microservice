@@ -12,12 +12,12 @@ import com.datn.moneyai.models.entities.bases.CategoryEntity;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
-    @Query(value = "SELECT * FROM category WHERE id = :id", nativeQuery = true)
+    @Query(value = "SELECT * FROM categories WHERE id = :id", nativeQuery = true)
     Optional<CategoryEntity> findCategoryById(@Param("id") Long id);
 
-    @Query(value = "SELECT * FROM category WHERE id = :id", nativeQuery = true)
+    @Query(value = "SELECT * FROM categories WHERE id = :id", nativeQuery = true)
     Optional<CategoryEntity> findActiveCategoryById(@Param("id") Long id);
 
-    @Query(value = "SELECT * FROM category", nativeQuery = true)
+    @Query(value = "SELECT * FROM categories", nativeQuery = true)
     List<CategoryEntity> findAllActiveCategories();
 }

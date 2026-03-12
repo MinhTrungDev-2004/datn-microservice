@@ -20,7 +20,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/categories")
+@RequestMapping("/public/categories")
 public class CategoryController {
     private final ICategoryService categoryService;
 
