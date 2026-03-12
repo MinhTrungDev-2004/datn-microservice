@@ -46,7 +46,7 @@ public class CategoryService implements ICategoryService {
         try {
             type = request.getType();
         } catch (IllegalArgumentException e) {
-            throw new UserMessageException("Loại danh mục không hợp lệ (Chỉ nhận CHI hoặc THU).");
+            throw new UserMessageException("Loại danh mục không hợp lệ (Chỉ nhận EXPENSE hoặc INCOME).");
         }
 
         CategoryEntity newCategory = CategoryEntity.builder()

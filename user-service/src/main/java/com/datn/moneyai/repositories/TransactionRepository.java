@@ -28,7 +28,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     @Query(value = "SELECT COALESCE(SUM(t.total_amount), 0) FROM transactions t " +
             "INNER JOIN category c ON t.category_id = c.id " +
             "WHERE t.user_id = :userId " +
-            "AND c.type = 'THU' " +
+            "AND c.type = 'INCOME' " +
             "AND MONTH(t.transaction_date) = MONTH(CURRENT_DATE) " +
             "AND YEAR(t.transaction_date) = YEAR(CURRENT_DATE) " +
             "AND t.total_amount > 0", nativeQuery = true)
@@ -37,7 +37,7 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
     @Query(value = "SELECT COALESCE(SUM(t.total_amount), 0) FROM transactions t " +
             "INNER JOIN category c ON t.category_id = c.id " +
             "WHERE t.user_id = :userId " +
-            "AND c.type = 'CHI' " +
+            "AND c.type = 'EXPENSE' " +
             "AND MONTH(t.transaction_date) = MONTH(CURRENT_DATE) " +
             "AND YEAR(t.transaction_date) = YEAR(CURRENT_DATE) " +
             "AND t.total_amount > 0", nativeQuery = true)

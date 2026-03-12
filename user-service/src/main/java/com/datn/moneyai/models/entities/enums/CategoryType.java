@@ -1,8 +1,8 @@
 package com.datn.moneyai.models.entities.enums;
 
 public enum CategoryType {
-    THU("Thu Nhập"),
-    CHI("Chi Tiêu");
+    EXPENSE("Chi Tiêu"),
+    INCOME("Thu Nhập");
 
     private final String displayName;
 
